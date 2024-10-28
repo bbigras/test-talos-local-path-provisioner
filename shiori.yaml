@@ -20,8 +20,8 @@ spec:
         fsGroup: 1000
       volumes:
         - name: app
-          hostPath:
-            path: /path/to/data/dir
+          persistentVolumeClaim:
+            claimName: local-path-pvc
       containers:
         - name: shiori
           image: ghcr.io/go-shiori/shiori:latest
