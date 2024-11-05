@@ -1,0 +1,53 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: shiori
+  labels:
+    app: shiori
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: shiori
+  template:
+    metadata:
+      labels:
+        app: shiori
+    spec:
+      securityContext:
+        runAsUser: 1000
+        runAsGroup: 1000
+        fsGroup: 1000
+      volumes:
+        - name: app
+          hostPath:
+            path: /path/to/data/dir
+      containers:
+        - name: shiori
+          image: ghcr.io/go-shiori/shiori:latest
+          command: ["/usr/bin/shiori", "serve", "--webroot", "/shiori"]
+          imagePullPolicy: Always
+          ports:
+            - containerPort: 8080
+          volumeMounts:
+            - mountPath: /srv/shiori
+              name: app
+          env:
+            - name: SHIORI_DIR
+              value: /srv/shiori
+            - name: HTTP_ROOT_PATH
+              value: "/shiori"
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: shiori
+spec:
+  type: NodePort
+  selector:
+    app: shiori
+  ports:
+    - protocol: TCP
+      port: 8080
+      targetPort: 8080
+      nodePort: 32654
